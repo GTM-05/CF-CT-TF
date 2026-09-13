@@ -57,16 +57,17 @@ terraform -chdir=terraform/stacks/account-baseline validate -var-file=terraform.
 
 ## Documentation
 
-- [ARCHITECTURE.md](ARCHITECTURE.md)
-- [MIGRATION.md](MIGRATION.md)
-- [ACCOUNT-PROVISIONING.md](ACCOUNT-PROVISIONING.md)
-- [TERRAFORM-STATE.md](TERRAFORM-STATE.md)
-- [INVENTORY.md](INVENTORY.md)
-- [CLOUDFORMATION-TO-TERRAFORM.md](CLOUDFORMATION-TO-TERRAFORM.md)
-- [SECURITY.md](SECURITY.md)
-- [OPERATIONS.md](OPERATIONS.md)
-- [ROLLBACK.md](ROLLBACK.md)
-- [CONTRIBUTING.md](CONTRIBUTING.md)
+Start at **[DOCS.md](DOCS.md)** (best file per topic).
+
+Most used:
+
+- [FLOW.md](FLOW.md) — factory + Terraform diagrams
+- [VALEO-ALIGNMENT.md](VALEO-ALIGNMENT.md) — Valeo poster vs this repo
+- [ARCHITECTURE.md](ARCHITECTURE.md) — current / target / CT boundary
+- [ACCOUNT-PROVISIONING.md](ACCOUNT-PROVISIONING.md) — how to request an account
+- [MIGRATION.md](MIGRATION.md) — existing 579 accounts
+- [CLI.md](CLI.md) — `valeotf` commands
+- [DEFINITION-OF-DONE.md](DEFINITION-OF-DONE.md) — what is not claimed yet
 
 ## Safety
 

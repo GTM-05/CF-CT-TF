@@ -8,4 +8,4 @@
 6. Run `terraform fmt` before merge
 7. Secrets stay out of Git, outputs, and examples (ARNs only)
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) and [MIGRATION.md](MIGRATION.md).
+See [DOCS.md](DOCS.md) for the documentation map. Follow [FLOW.md](FLOW.md); do not reorder GitLab stages without `pipeline/arc.yaml`.
