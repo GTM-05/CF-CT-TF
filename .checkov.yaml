@@ -1,0 +1,13 @@
+compact: true
+framework:
+  - terraform
+skip-path:
+  - "*/.terraform/*"
+  - "*/.terraform.lock.hcl"
+# Accepted platform patterns: Terraform apply IAM is service-scoped but Resource "*";
+# KMS key policy uses account root; Config/CloudTrail buckets are private + encrypted.
+skip-check:
+  - CKV_AWS_109
+  - CKV_AWS_111
+  - CKV_AWS_356
+  - CKV2_AWS_5

@@ -1,0 +1,31 @@
+approved_regions:
+  - eu-west-1
+  - eu-west-3
+  - eu-central-1
+
+approved_environments:
+  - sandbox
+  - dev
+  - test
+  - uat
+  - prod
+  - shared
+
+account_name:
+  pattern: "^[a-z0-9][a-z0-9-]{1,62}[a-z0-9]$"
+  max_length: 64
+  forbidden_prefixes:
+    - aws-
+    - amazon-
+
+required_tags:
+  - application
+  - cost_center
+
+ou_by_environment:
+  sandbox: sandbox
+  dev: non-production
+  test: non-production
+  uat: non-production
+  prod: production
+  shared: shared-services

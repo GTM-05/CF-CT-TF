@@ -1,0 +1,71 @@
+{
+  "stacksets": [
+    {
+      "name": "CustomControlTower-ec2-baseline-stack",
+      "purpose": "ec2-baseline",
+      "template": "ec2-baseline-stack.template.yaml",
+      "accounts": 120,
+      "regions": ["eu-west-1"],
+      "status": "ANALYZED",
+      "notes": "Has SSM, IAM, KMS, Secrets Manager, and Lambda termination. Inventory first."
+    },
+    {
+      "name": "CustomControlTower-ec2-users-stack",
+      "purpose": "ec2-baseline",
+      "template": "ec2-users-stack.template.yaml",
+      "accounts": 120,
+      "regions": ["eu-west-1"],
+      "status": "ANALYZED",
+      "notes": "Consolidate into terraform/modules/ec2-baseline, do not create a second module."
+    },
+    {
+      "name": "CustomControlTower-iam-baseline",
+      "purpose": "iam",
+      "template": "iam-baseline.template.yaml",
+      "accounts": 579,
+      "regions": ["eu-west-1"],
+      "status": "PROPOSED"
+    },
+    {
+      "name": "CustomControlTower-kms",
+      "purpose": "kms",
+      "template": "kms.template.yaml",
+      "accounts": 579,
+      "regions": ["eu-west-1", "eu-west-3"],
+      "status": "PROPOSED"
+    },
+    {
+      "name": "CustomControlTower-network",
+      "purpose": "network",
+      "template": "network.template.yaml",
+      "accounts": 200,
+      "regions": ["eu-west-1"],
+      "status": "PROPOSED"
+    },
+    {
+      "name": "CustomControlTower-config",
+      "purpose": "config",
+      "accounts": 579,
+      "regions": ["eu-west-1"],
+      "resources": ["AWS::Config::ConfigRule"],
+      "status": "PROPOSED"
+    },
+    {
+      "name": "CustomControlTower-stackset-orchestrator",
+      "purpose": "unclassified",
+      "accounts": 1,
+      "regions": ["eu-west-1"],
+      "resources": ["AWS::StepFunctions::StateMachine", "AWS::Events::Rule"],
+      "status": "PROPOSED",
+      "notes": "Orchestration only. Target action REMOVE after Terraform ownership."
+    },
+    {
+      "name": "CustomControlTower-codepipeline-wrapper",
+      "purpose": "unclassified",
+      "accounts": 1,
+      "regions": ["eu-west-1"],
+      "resources": ["AWS::CodePipeline::Pipeline", "AWS::CodeBuild::Project"],
+      "status": "PROPOSED"
+    }
+  ]
+}

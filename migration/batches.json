@@ -1,0 +1,35 @@
+{
+  "batches": [
+    {
+      "id": "batch-001",
+      "size": 5,
+      "environment": "non-production",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "batch-002",
+      "size": 25,
+      "environment": "non-production",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "batch-003",
+      "size": 50,
+      "environment": "non-production",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "batch-004",
+      "size": 100,
+      "environment": "mixed-non-production",
+      "status": "PROPOSED"
+    },
+    {
+      "id": "batch-prod",
+      "size": "remaining-production",
+      "environment": "prod",
+      "status": "PROPOSED",
+      "notes": "Production last. Approval required. Stop on destroy/replace."
+    }
+  ]
+}

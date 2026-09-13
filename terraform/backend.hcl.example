@@ -1,0 +1,6 @@
+bucket         = "REPLACE_WITH_STATE_BUCKET"
+key            = "aws/account-UNASSIGNED/dev/eu-west-1/baseline.tfstate"
+region         = "eu-west-1"
+dynamodb_table = "REPLACE_WITH_LOCK_TABLE"
+encrypt        = true
+# kms_key_id   = "arn:aws:kms:eu-west-1:111111111111:key/REPLACE"

@@ -1,0 +1,56 @@
+# Terraform
+**/.terraform/
+tfplan
+**/tfplan.json
+*.tfplan
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+generated.auto.tfvars.json
+backend.generated.hcl.example
+*.tfvars
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# Secrets / local
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+aws-credentials*
+
+# Generated (keep fixtures; ignore live dumps)
+inventory/generated/*.json
+!inventory/generated/.gitkeep
+inventory/reports/*.json
+inventory/reports/*.md
+!inventory/reports/.gitkeep
+migration/reports/*.json
+migration/reports/*.md
+!migration/reports/.gitkeep
+migration/imports/generated/
+!migration/imports/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+.DS_Store

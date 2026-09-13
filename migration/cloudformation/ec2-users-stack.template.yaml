@@ -1,0 +1,9 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Sample EC2 users stack. Should CONSOLIDATE into ec2-baseline, not a new module.
+
+Resources:
+  StandardUserDocument:
+    Type: AWS::SSM::Document
+    Properties:
+      Name: Valeo-EC2-StandardUsers
+      DocumentType: Command

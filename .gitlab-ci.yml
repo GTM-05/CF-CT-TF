@@ -1,0 +1,251 @@
+include:
+  - local: pipeline/generated/stages.yml
+  - template: Jobs/Secret-Detection.gitlab-ci.yml
+
+# Same factory order as production. Stages are generated from pipeline/arc.yaml.
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_PIPELINE_SOURCE == "web"
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+    - if: $CI_COMMIT_BRANCH
+
+variables:
+  TF_IN_AUTOMATION: "true"
+  TF_INPUT: "false"
+  PIP_DISABLE_PIP_VERSION_CHECK: "1"
+  FF_SCRIPT_SECTIONS: "true"
+
+default:
+  image: python:3.12-bookworm
+  interruptible: true
+
+.id_tokens: &id_tokens
+  id_tokens:
+    GITLAB_OIDC_TOKEN:
+      aud: $CI_SERVER_URL
+
+.request_python:
+  image: python:3.12-bookworm
+  before_script:
+    - pip install -e ".[dev]"
+
+request_validate:
+  extends: .request_python
+  stage: request-validate
+  script:
+    - valeotf generate-ci --check
+    - valeotf assert-arc
+    - pytest -q
+    - valeotf validate-request requests/aws/dev/example-nonprod.yaml
+    - valeotf validate-request requests/aws/test/example-existing-adopt.yaml
+    - valeotf arc
+    - valeotf analyze-stacksets
+    - valeotf generate-import-map
+
+secret_scan:
+  stage: security
+  script:
+    - |
+      if git grep -nE 'AKIA[0-9A-Z]{16}' -- ':!CHANGELOG.md' ; then
+        echo "Possible AWS access key committed" >&2
+        exit 1
+      fi
+    - |
+      if git grep -nE 'BEGIN (RSA |OPENSSH )?PRIVATE KEY' ; then
+        echo "Private key committed" >&2
+        exit 1
+      fi
+
+checkov:
+  stage: security
+  image:
+    name: bridgecrew/checkov:3.2.334
+    entrypoint: [""]
+  script:
+    - checkov -d terraform --config-file .checkov.yaml
+  allow_failure: false
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: never
+    - when: on_success
+
+.tf:
+  image:
+    name: hashicorp/terraform:1.9
+    entrypoint: [""]
+  <<: *id_tokens
+  before_script:
+    - terraform fmt -check -recursive terraform
+    - chmod +x scripts/ci/tf-init.sh scripts/ci/assume-oidc.sh
+    - . scripts/ci/assume-oidc.sh
+
+account_factory_plan:
+  extends: .tf
+  stage: account-factory
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/account-vending
+    - terraform -chdir=terraform/stacks/account-vending validate -var-file=terraform.tfvars.example
+    - |
+      if [ -n "${AWS_ROLE_ARN:-}" ] || [ "${VALEOTF_AWS_PLAN:-}" = "true" ] || [ -n "${AWS_ACCESS_KEY_ID:-}" ]; then
+        terraform -chdir=terraform/stacks/account-vending plan -input=false -detailed-exitcode -var-file=terraform.tfvars.example -out=tfplan || test $? -eq 2
+        terraform -chdir=terraform/stacks/account-vending show -json tfplan > terraform/stacks/account-vending/tfplan.json
+      else
+        echo '{"resource_changes":[]}' > terraform/stacks/account-vending/tfplan.json
+      fi
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - terraform/stacks/account-vending/tfplan
+      - terraform/stacks/account-vending/tfplan.json
+
+scp_plan:
+  extends: .tf
+  stage: scp
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/organization
+    - terraform -chdir=terraform/stacks/organization validate
+    - |
+      if [ -n "${AWS_ROLE_ARN:-}" ] || [ "${VALEOTF_AWS_PLAN:-}" = "true" ] || [ -n "${AWS_ACCESS_KEY_ID:-}" ]; then
+        terraform -chdir=terraform/stacks/organization plan -input=false -detailed-exitcode -out=tfplan || test $? -eq 2
+        terraform -chdir=terraform/stacks/organization show -json tfplan > terraform/stacks/organization/tfplan.json
+      else
+        echo '{"resource_changes":[]}' > terraform/stacks/organization/tfplan.json
+      fi
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - terraform/stacks/organization/tfplan
+      - terraform/stacks/organization/tfplan.json
+
+baseline_plan:
+  extends: .tf
+  stage: baseline
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/account-baseline
+    - terraform -chdir=terraform/stacks/account-baseline validate -var-file=terraform.tfvars.example
+    - |
+      if [ -n "${AWS_ROLE_ARN:-}" ] || [ "${VALEOTF_AWS_PLAN:-}" = "true" ] || [ -n "${AWS_ACCESS_KEY_ID:-}" ]; then
+        terraform -chdir=terraform/stacks/account-baseline plan -input=false -detailed-exitcode -var-file=terraform.tfvars.example -out=tfplan || test $? -eq 2
+        terraform -chdir=terraform/stacks/account-baseline show -json tfplan > terraform/stacks/account-baseline/tfplan.json
+      else
+        echo '{"resource_changes":[]}' > terraform/stacks/account-baseline/tfplan.json
+      fi
+  artifacts:
+    when: always
+    expire_in: 7 days
+    paths:
+      - terraform/stacks/account-baseline/tfplan
+      - terraform/stacks/account-baseline/tfplan.json
+
+resources_plan:
+  extends: .tf
+  stage: resources
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/account-resources
+    - terraform -chdir=terraform/stacks/account-resources validate -var=region=eu-west-1
+    - echo '{"resource_changes":[]}' > terraform/stacks/account-resources/tfplan.json
+  artifacts:
+    expire_in: 7 days
+    paths:
+      - terraform/stacks/account-resources/tfplan.json
+
+plan_destructive_gate:
+  extends: .request_python
+  stage: resources
+  needs: ["account_factory_plan", "scp_plan", "baseline_plan", "resources_plan"]
+  script:
+    - valeotf check-plan terraform/stacks/account-vending/tfplan.json
+    - valeotf check-plan terraform/stacks/organization/tfplan.json
+    - valeotf check-plan terraform/stacks/account-baseline/tfplan.json
+    - valeotf check-plan terraform/stacks/account-resources/tfplan.json
+
+secret_detection:
+  stage: security
+
+drift:
+  extends: .tf
+  stage: baseline
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/account-baseline
+    - terraform -chdir=terraform/stacks/account-baseline validate -var-file=terraform.tfvars.example
+    - |
+      if [ -n "${AWS_ROLE_ARN:-}" ] || [ "${VALEOTF_AWS_PLAN:-}" = "true" ]; then
+        terraform -chdir=terraform/stacks/account-baseline plan -input=false -detailed-exitcode -var-file=terraform.tfvars.example -out=tfplan || test $? -eq 2
+        terraform -chdir=terraform/stacks/account-baseline show -json tfplan > terraform/stacks/account-baseline/tfplan.json
+      else
+        echo '{"resource_changes":[]}' > terraform/stacks/account-baseline/tfplan.json
+      fi
+    - echo "Drift pipeline never applies. Review tfplan.json."
+  artifacts:
+    when: always
+    expire_in: 14 days
+    paths:
+      - terraform/stacks/account-baseline/tfplan.json
+
+approval:
+  stage: approval
+  environment:
+    name: production
+    action: prepare
+  script:
+    - echo "Same workflow as legacy: account factory, then SCP, then baseline."
+    - echo "Approve only after check-plan shows no destroy/replace."
+  when: manual
+  allow_failure: false
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+      when: manual
+    - when: never
+
+.apply:
+  extends: .tf
+  stage: apply
+  environment:
+    name: production
+    action: start
+  resource_group: production-terraform
+  interruptible: false
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE != "schedule"
+
+apply_account_factory:
+  extends: .apply
+  needs: ["account_factory_plan", "plan_destructive_gate", "approval"]
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/account-vending
+    - |
+      if [ "${VALEOTF_ENABLE_APPLY}" = "true" ] && [ -f terraform/stacks/account-vending/tfplan ]; then
+        terraform -chdir=terraform/stacks/account-vending apply -input=false tfplan
+      else
+        echo "Skipping account-factory apply (need VALEOTF_ENABLE_APPLY=true and saved tfplan)."
+      fi
+
+apply_scp:
+  extends: .apply
+  needs: ["scp_plan", "apply_account_factory"]
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/organization
+    - |
+      if [ "${VALEOTF_ENABLE_APPLY}" = "true" ] && [ -f terraform/stacks/organization/tfplan ]; then
+        terraform -chdir=terraform/stacks/organization apply -input=false tfplan
+      else
+        echo "Skipping SCP apply (need VALEOTF_ENABLE_APPLY=true and saved tfplan)."
+      fi
+
+apply_baseline:
+  extends: .apply
+  needs: ["baseline_plan", "apply_scp"]
+  script:
+    - scripts/ci/tf-init.sh terraform/stacks/account-baseline
+    - |
+      if [ "${VALEOTF_ENABLE_APPLY}" = "true" ] && [ -f terraform/stacks/account-baseline/tfplan ]; then
+        terraform -chdir=terraform/stacks/account-baseline apply -input=false tfplan
+      else
+        echo "Skipping baseline apply (need VALEOTF_ENABLE_APPLY=true and saved tfplan)."
+      fi

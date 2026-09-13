@@ -1,0 +1,22 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Sample network stack.
+
+Resources:
+  BaselineVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+  BaselineSubnet:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref BaselineVpc
+      CidrBlock: 10.0.1.0/24
+  BaselineRoutes:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref BaselineVpc
+  BaselineSg:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: baseline
+      VpcId: !Ref BaselineVpc

@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Sample KMS stack.
+
+Resources:
+  PlatformKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+  PlatformKeyAlias:
+    Type: AWS::KMS::Alias
+    Properties:
+      AliasName: alias/valeotf-platform
+      TargetKeyId: !Ref PlatformKey

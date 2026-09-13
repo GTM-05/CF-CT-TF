@@ -1,0 +1,58 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Sample EC2 baseline extracted for analysis only. Not applied by this repository.
+
+Parameters:
+  Environment:
+    Type: String
+  DirectoryId:
+    Type: String
+    NoEcho: true
+
+Resources:
+  BaselineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: valeotf-ec2-baseline
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: sts:AssumeRole
+  BaselineInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref BaselineRole
+  BaselineKey:
+    Type: AWS::KMS::Key
+    Properties:
+      EnableKeyRotation: true
+  JoinDomainDocument:
+    Type: AWS::SSM::Document
+    Properties:
+      Name: Valeo-EC2-JoinDomain
+      DocumentType: Automation
+  SecretPlaceholder:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: valeotf/ec2/local-user
+  TerminationFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: ec2-termination-automation
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt BaselineRole.Arn
+  TerminationRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: ec2-termination
+      EventPattern:
+        source:
+          - aws.ec2
+
+Outputs:
+  RoleArn:
+    Value: !GetAtt BaselineRole.Arn

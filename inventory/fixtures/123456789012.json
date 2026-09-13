@@ -1,0 +1,64 @@
+{
+  "account_id": "123456789012",
+  "account_name": "example-existing-adopt",
+  "ou": "non-production",
+  "region": "eu-west-1",
+  "environment": "test",
+  "tags": {
+    "application": "example",
+    "cost_center": "12345"
+  },
+  "control_tower_status": "enrolled",
+  "enabled_regions": ["eu-west-1"],
+  "source": "fixture",
+  "resources": {
+    "iam_roles": [
+      {
+        "name": "example-baseline-role",
+        "id": "example-baseline-role",
+        "arn": "arn:aws:iam::123456789012:role/example-baseline-role",
+        "stackset": "CustomControlTower-iam-baseline",
+        "owner": "CloudFormation-owned"
+      },
+      {
+        "name": "valeotf-ready-role",
+        "id": "valeotf-ready-role",
+        "arn": "arn:aws:iam::123456789012:role/valeotf-ready-role",
+        "stackset": "CustomControlTower-iam-baseline",
+        "owner": "Pending migration"
+      }
+    ],
+    "vpcs": [
+      {
+        "id": "vpc-0abc123",
+        "name": "example-vpc",
+        "stackset": "CustomControlTower-network",
+        "owner": "Pending migration"
+      }
+    ],
+    "kms_keys": [
+      {
+        "id": "00000000-0000-0000-0000-000000000001",
+        "arn": "arn:aws:kms:eu-west-1:123456789012:key/00000000-0000-0000-0000-000000000001",
+        "stackset": "CustomControlTower-kms",
+        "owner": "Pending migration"
+      }
+    ],
+    "ssm_documents": [
+      {
+        "name": "Valeo-EC2-Baseline",
+        "id": "Valeo-EC2-Baseline",
+        "stackset": "CustomControlTower-ec2-baseline-stack",
+        "owner": "Pending migration"
+      }
+    ],
+    "lambda_functions": [
+      {
+        "name": "ec2-termination-automation",
+        "id": "ec2-termination-automation",
+        "stackset": "CustomControlTower-ec2-baseline-stack",
+        "owner": "Pending migration"
+      }
+    ]
+  }
+}

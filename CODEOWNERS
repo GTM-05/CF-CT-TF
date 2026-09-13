@@ -1,0 +1,6 @@
+* @platform-engineering
+/.gitlab-ci.yml @platform-engineering
+/pipeline/ @platform-engineering
+/terraform/ @platform-engineering
+/policies/ @platform-engineering
+/schemas/ @platform-engineering

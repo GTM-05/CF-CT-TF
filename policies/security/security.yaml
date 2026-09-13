@@ -1,0 +1,10 @@
+encryption_required: true
+monitoring_required: true
+prohibit_public_access_defaults: true
+secrets:
+  never_in_git: true
+  never_in_terraform_outputs: true
+  never_in_ci_logs: true
+prohibited_configurations:
+  - unencrypted_ebs_default_disabled
+  - wildcard_iam_trust_on_terraform_role

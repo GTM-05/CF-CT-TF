@@ -1,0 +1,145 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://valeo.example/schemas/account-request.schema.yaml"
+title: Cloud-neutral account request
+description: >
+  Request model for provisioning or adopting a cloud account. Fields are not
+  AWS-specific. Provider-specific details live under cloud.provider and
+  optional provider_extensions.
+type: object
+additionalProperties: false
+required:
+  - account
+  - cloud
+  - governance
+  - tags
+properties:
+  api_version:
+    type: string
+    const: valeotf.account-request/v1
+  account:
+    type: object
+    additionalProperties: false
+    required: [name, owner, environment, business_unit, requested_ou]
+    properties:
+      name:
+        type: string
+        minLength: 3
+        maxLength: 64
+        pattern: "^[a-z0-9][a-z0-9-]+[a-z0-9]$"
+      owner:
+        type: string
+        minLength: 1
+      contact_email:
+        type: string
+        format: email
+        description: Required for new-account vending; unused for adopt-existing if existing_account_id is set
+      environment:
+        type: string
+        enum: [dev, test, uat, prod, sandbox, shared]
+      business_unit:
+        type: string
+      country:
+        type: string
+      requested_ou:
+        type: string
+        description: Logical OU name, not a cloud-vendor identifier
+      existing_account_id:
+        type: string
+        description: If adopting an existing account, the provider account identifier
+        pattern: "^[0-9]{12}$"
+  cloud:
+    type: object
+    additionalProperties: false
+    required: [provider, region]
+    properties:
+      provider:
+        type: string
+        enum: [aws, gcp, alibaba]
+      region:
+        type: string
+        minLength: 2
+      additional_regions:
+        type: array
+        items:
+          type: string
+      provider_extensions:
+        type: object
+        description: Optional vendor-specific keys; must not replace the common model
+        additionalProperties: true
+  governance:
+    type: object
+    additionalProperties: false
+    required: [control_tower]
+    properties:
+      control_tower:
+        type: boolean
+      required_controls:
+        type: array
+        items:
+          type: string
+      enroll_if_unenrolled:
+        type: boolean
+        default: false
+        description: Request Control Tower enrollment via adapter; never invent TF resources
+  network:
+    type: object
+    additionalProperties: false
+    properties:
+      required:
+        type: boolean
+      network_profile:
+        type: string
+        enum: [none, standard, isolated, shared]
+  security:
+    type: object
+    additionalProperties: false
+    properties:
+      encryption:
+        type: boolean
+      monitoring:
+        type: boolean
+  baseline:
+    type: object
+    additionalProperties: false
+    properties:
+      iam:
+        type: boolean
+      ec2:
+        type: boolean
+      rds:
+        type: boolean
+      backup:
+        type: boolean
+      ssm:
+        type: boolean
+      config:
+        type: boolean
+      logging:
+        type: boolean
+      kms:
+        type: boolean
+  tags:
+    type: object
+    additionalProperties:
+      type: string
+    required: [application, cost_center]
+    properties:
+      application:
+        type: string
+        minLength: 1
+      cost_center:
+        type: string
+        minLength: 1
+  migration:
+    type: object
+    additionalProperties: false
+    properties:
+      mode:
+        type: string
+        enum: [new-account, adopt-existing]
+        default: new-account
+      batch_id:
+        type: string
+      dry_run:
+        type: boolean
+        default: true

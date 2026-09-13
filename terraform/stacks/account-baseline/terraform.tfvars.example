@@ -1,0 +1,24 @@
+account_name                     = "ci-validate"
+account_id                       = ""
+environment                      = "dev"
+requested_ou                     = "non-production"
+owner                            = "platform-team"
+region                           = "eu-west-1"
+enable_control_tower_governance  = true
+enable_network                   = true
+network_profile                  = "standard"
+enable_encryption                = true
+enable_monitoring                = true
+enable_iam                       = true
+enable_ec2_baseline              = false
+enable_rds_baseline              = false
+enable_backup                    = true
+enable_ssm                       = true
+enable_config                    = true
+enable_logging                   = true
+enable_kms                       = true
+dry_run                          = true
+tags = {
+  application = "valeotf"
+  cost_center = "00000"
+}

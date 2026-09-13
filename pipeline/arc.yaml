@@ -1,0 +1,103 @@
+# Same architectural arc as the existing Valeo factory.
+# GitLab CI and valeotf.arc must stay aligned with this file.
+# We do not recreate Service Catalog / EventBridge / Step Functions / CodePipeline.
+# We keep the same ordered responsibilities.
+
+version: 1
+principle: discover-map-import-plan-approve-manage
+control_tower: remains-native-governance
+
+stages:
+  - id: request-validate
+    legacy:
+      - AWS Service Catalog (request + constraints)
+      - Valeo Account Factory input
+    modern:
+      - Git account request YAML/JSON
+      - JSON Schema validation
+      - Policy validation
+    gitlab_stage: request-validate
+    terraform_stack: null
+
+  - id: security-scan
+    legacy:
+      - Implicit pipeline IAM / CodeBuild roles
+    modern:
+      - Secret detection
+      - Terraform fmt/validate
+      - Destructive-plan policy
+    gitlab_stage: security
+    terraform_stack: null
+
+  - id: account-factory
+    legacy:
+      - Valeo Account Factory
+      - CloudFormation wrapper
+      - Control Tower Account Factory
+    modern:
+      - terraform/stacks/account-vending
+      - Control Tower adapter (no fake TF resources)
+      - STS role bootstrap outputs
+    gitlab_stage: account-factory
+    terraform_stack: terraform/stacks/account-vending
+    notes: Control Tower enrollment uses AWS CT APIs/adapter, not invented resources.
+
+  - id: event-trigger
+    legacy:
+      - EventBridge
+    modern:
+      - GitLab pipeline on merge of requests/** and terraform/**
+    gitlab_stage: null
+    terraform_stack: null
+
+  - id: orchestration
+    legacy:
+      - Step Functions
+      - CodePipeline
+      - CodeBuild
+    modern:
+      - GitLab stage DAG
+      - Terraform dependency graph
+      - GitLab runner
+    gitlab_stage: null
+    terraform_stack: null
+
+  - id: scp
+    legacy:
+      - SCP Step Function
+      - AWS Organizations SCPs
+    modern:
+      - terraform/stacks/organization
+      - aws_organizations_policy + attachment
+    gitlab_stage: scp
+    terraform_stack: terraform/stacks/organization
+
+  - id: baseline
+    legacy:
+      - StackSet Step Function
+      - CloudFormation StackSets
+      - Stack instances / stacks
+    modern:
+      - terraform/stacks/account-baseline
+      - consolidated modules (not 1:1 StackSet copies)
+      - per-account/env/region state
+    gitlab_stage: baseline
+    terraform_stack: terraform/stacks/account-baseline
+
+  - id: resources
+    legacy:
+      - Additional StackSets / stacks
+    modern:
+      - terraform/stacks/account-resources
+    gitlab_stage: resources
+    terraform_stack: terraform/stacks/account-resources
+
+  - id: approval-apply
+    legacy:
+      - Manual Service Catalog / pipeline approvals (where present)
+    modern:
+      - Manual GitLab approval
+      - valeotf check-plan stop on destroy/replace
+      - terraform apply of the saved plan
+    gitlab_stage: approval
+    terraform_stack: null

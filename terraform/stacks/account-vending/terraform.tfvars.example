@@ -1,0 +1,10 @@
+account_name  = "ci-validate"
+account_email = "platform-team@example.com"
+account_id    = ""
+region        = "eu-west-1"
+enable_vending = false
+dry_run        = true
+tags = {
+  application = "valeotf"
+  cost_center = "00000"
+}

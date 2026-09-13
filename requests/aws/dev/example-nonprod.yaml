@@ -1,0 +1,50 @@
+api_version: valeotf.account-request/v1
+
+account:
+  name: example-nonprod
+  owner: platform-team
+  contact_email: platform-team@example.com
+  environment: dev
+  business_unit: example
+  country: france
+  requested_ou: non-production
+
+cloud:
+  provider: aws
+  region: eu-west-1
+  additional_regions: []
+  provider_extensions: {}
+
+governance:
+  control_tower: true
+  required_controls:
+    - baseline-security
+    - logging
+    - encryption
+  enroll_if_unenrolled: false
+
+network:
+  required: true
+  network_profile: standard
+
+security:
+  encryption: true
+  monitoring: true
+
+baseline:
+  iam: true
+  ec2: true
+  rds: true
+  backup: true
+  ssm: true
+  config: true
+  logging: true
+  kms: true
+
+tags:
+  application: example
+  cost_center: "12345"
+
+migration:
+  mode: new-account
+  dry_run: true

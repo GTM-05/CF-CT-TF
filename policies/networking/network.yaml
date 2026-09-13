@@ -1,0 +1,14 @@
+network_required_environments:
+  - prod
+  - uat
+  - test
+  - dev
+
+approved_network_profiles:
+  - none
+  - standard
+  - isolated
+  - shared
+
+prod_forbidden_profiles:
+  - none

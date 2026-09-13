@@ -1,0 +1,134 @@
+{
+  "AWS::IAM::Role": {
+    "terraform": "aws_iam_role",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::IAM::ManagedPolicy": {
+    "terraform": "aws_iam_policy",
+    "import_id": "arn",
+    "action_default": "MIGRATE"
+  },
+  "AWS::IAM::InstanceProfile": {
+    "terraform": "aws_iam_instance_profile",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::KMS::Key": {
+    "terraform": "aws_kms_key",
+    "import_id": "key_id",
+    "action_default": "MIGRATE"
+  },
+  "AWS::KMS::Alias": {
+    "terraform": "aws_kms_alias",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::EC2::SecurityGroup": {
+    "terraform": "aws_security_group",
+    "import_id": "id",
+    "action_default": "MIGRATE"
+  },
+  "AWS::EC2::VPC": {
+    "terraform": "aws_vpc",
+    "import_id": "id",
+    "action_default": "MIGRATE"
+  },
+  "AWS::EC2::Subnet": {
+    "terraform": "aws_subnet",
+    "import_id": "id",
+    "action_default": "MIGRATE"
+  },
+  "AWS::EC2::RouteTable": {
+    "terraform": "aws_route_table",
+    "import_id": "id",
+    "action_default": "MIGRATE"
+  },
+  "AWS::S3::Bucket": {
+    "terraform": "aws_s3_bucket",
+    "import_id": "bucket",
+    "action_default": "MIGRATE"
+  },
+  "AWS::SNS::Topic": {
+    "terraform": "aws_sns_topic",
+    "import_id": "arn",
+    "action_default": "MIGRATE"
+  },
+  "AWS::SSM::Document": {
+    "terraform": "aws_ssm_document",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::Backup::BackupVault": {
+    "terraform": "aws_backup_vault",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::Backup::BackupPlan": {
+    "terraform": "aws_backup_plan",
+    "import_id": "id",
+    "action_default": "MIGRATE"
+  },
+  "AWS::Config::ConfigRule": {
+    "terraform": "aws_config_config_rule",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::Config::ConfigurationRecorder": {
+    "terraform": "aws_config_configuration_recorder",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::Logs::LogGroup": {
+    "terraform": "aws_cloudwatch_log_group",
+    "import_id": "name",
+    "action_default": "MIGRATE"
+  },
+  "AWS::Events::Rule": {
+    "terraform": "aws_cloudwatch_event_rule",
+    "import_id": "name",
+    "action_default": "MANUAL_REVIEW"
+  },
+  "AWS::Lambda::Function": {
+    "terraform": "aws_lambda_function",
+    "import_id": "function_name",
+    "action_default": "MANUAL_REVIEW"
+  },
+  "AWS::SecretsManager::Secret": {
+    "terraform": "aws_secretsmanager_secret",
+    "import_id": "arn",
+    "action_default": "MANUAL_REVIEW"
+  },
+  "AWS::DirectoryService::MicrosoftAD": {
+    "terraform": null,
+    "import_id": null,
+    "action_default": "MANUAL_REVIEW_REQUIRED"
+  },
+  "AWS::CloudFormation::StackSet": {
+    "terraform": null,
+    "import_id": null,
+    "action_default": "REMOVE",
+    "notes": "StackSet orchestration is replaced by Terraform modules; do not recreate StackSets."
+  },
+  "AWS::StepFunctions::StateMachine": {
+    "terraform": null,
+    "import_id": null,
+    "action_default": "REMOVE",
+    "notes": "Custom orchestration is replaced by GitLab CI + Terraform graph."
+  },
+  "AWS::CodePipeline::Pipeline": {
+    "terraform": null,
+    "import_id": null,
+    "action_default": "REMOVE"
+  },
+  "AWS::CodeBuild::Project": {
+    "terraform": null,
+    "import_id": null,
+    "action_default": "REMOVE"
+  },
+  "AWS::ServiceCatalog::CloudFormationProvisionedProduct": {
+    "terraform": null,
+    "import_id": null,
+    "action_default": "REMOVE"
+  }
+}

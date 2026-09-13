@@ -1,0 +1,8 @@
+control_tower_required: true
+backup_required_environments:
+  - prod
+  - uat
+config_required: true
+logging_required: true
+production_apply_requires_approval: true
+destructive_plan_requires_stop: true
